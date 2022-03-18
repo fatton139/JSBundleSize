@@ -1,6 +1,7 @@
 name: Test action
 
 on:
+  push:
   pull_request:
 
 permissions:
