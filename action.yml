@@ -1,20 +1,24 @@
-name: 'Compute JS Bundle size'
-description: 'Github action to compute total JS bundle size'
-author: 'sarthak-saxena'
+name: "File sizes"
+description: "Comments file sizes on a given PR"
+author: "sarthak-saxena & fatton139"
 inputs:
   dist_path:
-    description: 'output path for the build package'
+    description: "output path for the build package"
     required: true
-    default: 'dist'
+    default: "dist"
   token:
-    description: 'your GITHUB_TOKEN'
+    description: "your GITHUB_TOKEN"
+    required: true
+  update_comment:
+    description: "whether to update the existing comment or create new ones"
     required: false
+    default: true
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node12"
+  main: "dist/index.js"
 outputs:
   size: # output will be available to future steps
-    description: 'Build Size'
+    description: "Build Size"
 branding:
-  icon: 'hard-drive'
-  color: 'blue'
+  icon: "hard-drive"
+  color: "blue"

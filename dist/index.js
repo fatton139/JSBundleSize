@@ -1230,50 +1230,47 @@ const core = __webpack_require__(470);
 const exec = __webpack_require__(986);
 const github = __webpack_require__(469);
 
-const findComment = async (octokit, owner, issue_number, repo) => {
-  console.log("finding", owner, issue_number, repo);
-  try {
-    for await (const { data: comments } of octokit.paginate.iterator(
-      octokit.rest.issues.listComments,
-      {
-        repo,
-        owner,
-        issue_number,
-      }
-    )) {
-      // Search each page for the comment
-      const comment = comments.find((comment) => {
-        return (
-          comment.user.login === "github-actions[bot]" &&
-          comment.user.type === "Bot" &&
-          comment.body.startsWith("Bundled size for the files is listed below:")
-        );
-      });
+const GITHUB_ACTIONS_USER_NAME = "github-actions[bot]";
+const GITHUB_ACTIONS_USER_TYPE = "Bot";
+const GITHUB_ACTIONS_COMMENT_START_TEXT =
+  "Bundled size for the files is listed below:";
 
-      if (comment) {
-        return comment;
-      }
+async function findComment(octokit, { owner, issue_number, repo }) {
+  for await (const { data: comments } of octokit.paginate.iterator(
+    octokit.rest.issues.listComments,
+    {
+      repo,
+      owner,
+      issue_number,
     }
-  } catch (e) {
-    console.log(e.response.data);
-    if (e.response.data.message === "Not Found") {
-      return undefined;
+  )) {
+    // Search each page for the comment
+    const comment = comments.find((comment) => {
+      return (
+        comment.user.login === GITHUB_ACTIONS_USER_NAME &&
+        comment.user.type === GITHUB_ACTIONS_USER_TYPE &&
+        comment.body.startsWith(GITHUB_ACTIONS_COMMENT_START_TEXT)
+      );
+    });
+
+    if (comment) {
+      return comment;
     }
-    throw e;
   }
-};
+}
+
+function bytesToSize(bytes) {
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Byte";
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
+}
 
 async function run() {
-  function bytesToSize(bytes) {
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    if (bytes === 0) return "0 Byte";
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-    return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
-  }
   try {
     // --------------- octokit initialization  ---------------
     const token = core.getInput("token");
-    console.log("Initializing oktokit with token", token);
+    const updateComment = core.getBooleanInput("update_comment");
     const octokit = new github.getOctokit(token);
 
     const dist_path = core.getInput("dist_path");
@@ -1292,9 +1289,9 @@ async function run() {
     await exec.exec(`du ${dist_path}`, null, outputOptions);
     core.setOutput("size", sizeCalOutput);
     const context = github.context;
-    const pull_request = context.payload.pull_request;
-    const owner = github.context.payload.repository.owner.login;
-    const repo = github.context.payload.repository.name;
+    const pullRequest = context.payload.pull_request;
+    const owner = context.payload.repository.owner.login;
+    const repo = context.payload.repository.name;
 
     const arrayOutput = sizeCalOutput.split("\n");
     const header = "Bundled size for the files is listed below:";
@@ -1307,18 +1304,13 @@ async function run() {
     });
 
     if (pull_request) {
-      const existingComment = await findComment(
-        octokit,
+      const existingComment = await findComment(octokit, {
         owner,
-        pull_request.number,
-        repo
-      );
-
-      console.log("found", existingComment);
-
-      // If the comment exists and starts with our defined header above then it must be our previous comment,
-      // then update instead of creating a new one.
-      if (existingComment) {
+        issue_number: pullRequest.number,
+        repo,
+      });
+      // If the comment exists then update instead of creating a new one.
+      if (existingComment && updateComment) {
         await octokit.rest.issues.updateComment({
           owner,
           repo,
@@ -1330,22 +1322,21 @@ async function run() {
         await octokit.rest.issues.createComment({
           owner,
           repo,
-          issue_number: pull_request.number,
+          issue_number: pullRequest.number,
           body: result,
         });
       }
+    } else {
+      core.notice("Did not run since we're not in a PR.");
     }
 
     // --------------- End Comment repo size  ---------------
   } catch (error) {
-    console.log(error.stack);
     core.setFailed(error.message);
   }
 }
 
 run();
-
-console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 
 /***/ }),
