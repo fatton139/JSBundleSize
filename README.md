@@ -2,7 +2,7 @@
 
 Simple action to comment file size/s on a PR.
 
-Just specify the path to a directory or file.
+Just specify the path to a directory or file via `dist_path`.
 
 You can choose to upsert the existing bot comment or create new ones after every change by configuring the `update_comment` flag.
 
@@ -17,7 +17,7 @@ steps:
         npm install
         npm build
         # ... other build steps
-      - uses: fatton139/pr-comment-file-size@master
+      - uses: fatton139/pr-comment-file-size@main
         with:
           dist_path: "./path-to-output-dir-or-file"
           update_comment: false

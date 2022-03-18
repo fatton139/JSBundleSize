@@ -1,4 +1,4 @@
-name: Calculate JS Bundle Size
+name: CI
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "10.0.0"
-      - uses: fatton139/pr-comment-file-size@master
+      - uses: fatton139/pr-comment-file-size@main
         with:
           dist_path: "packages/crop/dist"
           update_comment: false
