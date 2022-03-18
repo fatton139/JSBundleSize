@@ -74,7 +74,7 @@ async function run() {
       }
     });
 
-    console.log("test", github.context.repository);
+    console.log("test", github.context);
 
     if (pull_request) {
       const existingComment = await findComment(
