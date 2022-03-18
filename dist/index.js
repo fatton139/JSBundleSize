@@ -1309,7 +1309,7 @@ async function run() {
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
-        "github-actions",
+        github.context.payload.repository.owner.login,
         pull_request.number,
         github.context.payload.repository.name
       );
