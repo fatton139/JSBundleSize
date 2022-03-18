@@ -1243,11 +1243,6 @@ const findComment = async (octokit, owner, issue_number, repo) => {
     )) {
       // Search each page for the comment
       const comment = comments.find((comment) => {
-        console.log(
-          comment.user.login,
-          comment.user.type,
-          comment.body.startsWith("Bundled size for the files is listed below:")
-        );
         return (
           comment.user.login === "github-actions[bot]" &&
           comment.user.type === "Bot" &&
@@ -1296,8 +1291,10 @@ async function run() {
     };
     await exec.exec(`du ${dist_path}`, null, outputOptions);
     core.setOutput("size", sizeCalOutput);
-    const context = github.context,
-      pull_request = context.payload.pull_request;
+    const context = github.context;
+    const pull_request = context.payload.pull_request;
+    const owner = github.context.payload.repository.owner.login;
+    const repo = github.context.payload.repository.name;
 
     const arrayOutput = sizeCalOutput.split("\n");
     const header = "Bundled size for the files is listed below:";
@@ -1312,28 +1309,30 @@ async function run() {
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
-        github.context.payload.repository.owner.login,
+        owner,
         pull_request.number,
-        github.context.payload.repository.name
+        repoName
       );
 
       console.log("found", existingComment);
 
-      // If the comment exists and starts with our defined header above then it must be our previous comment.
-      // Then update instead of creating a new one.
+      // If the comment exists and starts with our defined header above then it must be our previous comment,
+      // then update instead of creating a new one.
       if (existingComment) {
         octokit.rest.issues.updateComment({
+          owner,
+          repo,
           comment_id: existingComment.id,
           body: result,
         });
       } else {
         // on pull request commit push add comment to pull request
-        octokit.rest.issues.createComment(
-          Object.assign(Object.assign({}, context.repo), {
-            issue_number: pull_request.number,
-            body: result,
-          })
-        );
+        octokit.rest.issues.createComment({
+          owner,
+          repo,
+          issue_number: pull_request.number,
+          body: result,
+        });
       }
     }
 
