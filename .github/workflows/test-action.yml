@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - uses: ../
+      - uses: ../action.yml
         with:
           dist_path: "./dist/"
           token: ${{ secrets.GITHUB_TOKEN }}
