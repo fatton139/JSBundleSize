@@ -1231,6 +1231,8 @@ const exec = __webpack_require__(986);
 const github = __webpack_require__(469);
 
 const findComment = async (octokit, owner, issue_number, repo) => {
+
+  console.log("finding", owner, issue_number, repo)
   try {
     for await (const { data: comments } of octokit.paginate.iterator(
       octokit.rest.issues.listComments,
@@ -1307,7 +1309,7 @@ async function run() {
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
-        "github-actions[bot]",
+        "github-actions",
         pull_request.number,
         github.context.payload.repository.name
       );
