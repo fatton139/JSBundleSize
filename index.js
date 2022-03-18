@@ -3,23 +3,28 @@ const exec = require("@actions/exec");
 const github = require("@actions/github");
 
 const findComment = async (octokit, owner, issue_number) => {
-  for await (const { data: comments } of octokit.paginate.iterator(
-    octokit.rest.issues.listComments,
-    {
-      owner,
-      issue_number,
-    }
-  )) {
-    // Search each page for the comment
-    const comment = comments.find(
-      (comment) =>
-        comment.user.login === owner &&
-        comment.body.includes("Bundled size for the files is listed below:")
-    );
+  try {
+    for await (const { data: comments } of octokit.paginate.iterator(
+      octokit.rest.issues.listComments,
+      {
+        owner,
+        issue_number,
+      }
+    )) {
+      // Search each page for the comment
+      const comment = comments.find(
+        (comment) =>
+          comment.user.login === owner &&
+          comment.body.includes("Bundled size for the files is listed below:")
+      );
 
-    if (comment) {
-      return comment;
+      if (comment) {
+        return comment;
+      }
     }
+  } catch (e) {
+    console.log("find comment", e);
+    return undefined;
   }
 };
 
@@ -94,7 +99,7 @@ async function run() {
 
     // --------------- End Comment repo size  ---------------
   } catch (error) {
-    console.log(error.stack)
+    console.log(error.stack);
     core.setFailed(error.message);
   }
 }
