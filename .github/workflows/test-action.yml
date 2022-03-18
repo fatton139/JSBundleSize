@@ -8,12 +8,12 @@ permissions:
     pull-requests: write
 
 jobs:
-  lint:
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
 
-      - uses: fatton139/JSBundleSize@master
+      - uses: fatton139/JSBundleSize@test
         with:
           dist_path: './dist/'
           token: ${{ secrets.GITHUB_TOKEN }}
