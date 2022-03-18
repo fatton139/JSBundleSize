@@ -5,9 +5,9 @@ on:
   pull_request:
 
 permissions:
-    id-token: write
-    contents: read
-    pull-requests: write
+  id-token: write
+  contents: read
+  pull-requests: write
 
 jobs:
   run:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - uses: fatton139/JSBundleSize@test
+      - uses: "fatton139/JSBundleSize@test"
         with:
-          dist_path: './dist/'
+          dist_path: "./dist/"
           token: ${{ secrets.GITHUB_TOKEN }}
