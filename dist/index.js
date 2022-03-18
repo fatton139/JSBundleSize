@@ -1303,7 +1303,7 @@ async function run() {
       }
     });
 
-    if (pull_request) {
+    if (pullRequest) {
       const existingComment = await findComment(octokit, {
         owner,
         issue_number: pullRequest.number,
