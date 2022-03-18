@@ -1,8 +1,10 @@
 # Comment file size on PR
 
-Simple action to comment file sizes on a PR. Just specify the path.
+Simple action to comment file size/s on a PR.
 
-You can choose to upsert the existing bot comment or create new ones after every change.
+Just specify the path to a directory or file.
+
+You can choose to upsert the existing bot comment or create new ones after every change by configuring the `update_comment` flag.
 
 ## Usage:
 
