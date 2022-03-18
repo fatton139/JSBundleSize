@@ -2,11 +2,12 @@ const core = require("@actions/core");
 const exec = require("@actions/exec");
 const github = require("@actions/github");
 
-const findComment = async (octokit, owner, issue_number) => {
+const findComment = async (octokit, owner, issue_number, repo) => {
   try {
     for await (const { data: comments } of octokit.paginate.iterator(
       octokit.rest.issues.listComments,
       {
+        repo,
         owner,
         issue_number,
       }
@@ -81,7 +82,7 @@ async function run() {
       );
 
       console.log("--", existingComment);
-      console.log("test");
+      console.log("test", github.context);
 
       // If the comment exists and starts with our defined header above then it must be our previous comment.
       // Then update instead of creating a new one.
