@@ -18,7 +18,7 @@ const findComment = async (octokit, owner, issue_number, repo) => {
       console.log("--------", comments);
       const comment = comments.find(
         (comment) =>
-          comment.user.login === owner &&
+          comment.user.login === "github-actions" &&
           comment.body.includes("Bundled size for the files is listed below:")
       );
 
@@ -76,7 +76,7 @@ async function run() {
       }
     });
 
-    console.log("test", github.context.payload.repository.name);
+    console.log("test", github.context.payload);
 
     if (pull_request) {
       const existingComment = await findComment(
