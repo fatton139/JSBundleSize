@@ -1,4 +1,4 @@
-name: "File sizes"
+name: "pr-comment-file-size"
 description: "Comments file sizes on a given PR"
 author: "sarthak-saxena & fatton139"
 inputs:
