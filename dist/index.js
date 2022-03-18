@@ -1322,6 +1322,7 @@ async function run() {
 
     // --------------- End Comment repo size  ---------------
   } catch (error) {
+    console.log(error.stack)
     core.setFailed(error.message);
   }
 }
