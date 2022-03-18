@@ -91,7 +91,7 @@ async function run() {
       // If the comment exists and starts with our defined header above then it must be our previous comment,
       // then update instead of creating a new one.
       if (existingComment) {
-        octokit.rest.issues.updateComment({
+        await octokit.rest.issues.updateComment({
           owner,
           repo,
           comment_id: existingComment.id,
@@ -99,7 +99,7 @@ async function run() {
         });
       } else {
         // on pull request commit push add comment to pull request
-        octokit.rest.issues.createComment({
+        await octokit.rest.issues.createComment({
           owner,
           repo,
           issue_number: pull_request.number,
