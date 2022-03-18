@@ -1246,7 +1246,8 @@ const findComment = async (octokit, owner, issue_number, repo) => {
       console.log("--------", comments);
       const comment = comments.find(
         (comment) =>
-          comment.user.login === "github-actions" &&
+          comment.user.login === "github-actions[bot]" &&
+          comment.user.type === "bot" &&
           comment.body.startsWith("Bundled size for the files is listed below:")
       );
 
