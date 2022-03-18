@@ -3,8 +3,7 @@ const exec = require("@actions/exec");
 const github = require("@actions/github");
 
 const findComment = async (octokit, owner, issue_number, repo) => {
-
-  console.log("finding", owner, issue_number, repo)
+  console.log("finding", owner, issue_number, repo);
   try {
     for await (const { data: comments } of octokit.paginate.iterator(
       octokit.rest.issues.listComments,
@@ -15,13 +14,18 @@ const findComment = async (octokit, owner, issue_number, repo) => {
       }
     )) {
       // Search each page for the comment
-      console.log("--------", comments);
-      const comment = comments.find(
-        (comment) =>
+      const comment = comments.find((comment) => {
+        console.log(
+          comment.user.login,
+          comment.user.type,
+          comment.body.startsWith("Bundled size for the files is listed below:")
+        );
+        return (
           comment.user.login === "github-actions[bot]" &&
           comment.user.type === "Bot" &&
           comment.body.startsWith("Bundled size for the files is listed below:")
-      );
+        );
+      });
 
       if (comment) {
         return comment;
@@ -86,7 +90,6 @@ async function run() {
       );
 
       console.log("found", existingComment);
-
 
       // If the comment exists and starts with our defined header above then it must be our previous comment.
       // Then update instead of creating a new one.
