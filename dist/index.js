@@ -1302,14 +1302,14 @@ async function run() {
       }
     });
 
-    console.log("test", github.context);
+    console.log("test", github.context.payload.repository.name);
 
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
         "github-actions[bot]",
         pull_request.number,
-        github.context.repository.name
+        github.context.payload.repository.name
       );
 
       console.log("--", existingComment);
