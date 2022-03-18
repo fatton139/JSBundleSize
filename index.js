@@ -13,7 +13,7 @@ const findComment = async (octokit, owner, issue_number, repo) => {
       }
     )) {
       // Search each page for the comment
-      console.log("--------", comments)
+      console.log("--------", comments);
       const comment = comments.find(
         (comment) =>
           comment.user.login === owner &&
@@ -78,7 +78,8 @@ async function run() {
       const existingComment = await findComment(
         octokit,
         "github-actions[bot]",
-        pull_request.number
+        pull_request.number,
+        github.context.repository.name
       );
 
       console.log("--", existingComment);
