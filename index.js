@@ -19,7 +19,7 @@ const findComment = async (octokit, owner, issue_number, repo) => {
       const comment = comments.find(
         (comment) =>
           comment.user.login === "github-actions" &&
-          comment.body.includes("Bundled size for the files is listed below:")
+          comment.body.startsWith("Bundled size for the files is listed below:")
       );
 
       if (comment) {
@@ -76,8 +76,6 @@ async function run() {
       }
     });
 
-    console.log("test", github.context.payload);
-
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
@@ -86,7 +84,7 @@ async function run() {
         github.context.payload.repository.name
       );
 
-      console.log("--", existingComment);
+      console.log("found", existingComment);
 
 
       // If the comment exists and starts with our defined header above then it must be our previous comment.
