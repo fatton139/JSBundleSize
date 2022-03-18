@@ -1,0 +1,20 @@
+name: Test action
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: ./
+        with:
+          dist_path: "./dist/"
+          token: ${{ secrets.GITHUB_TOKEN }}
