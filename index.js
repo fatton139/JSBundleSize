@@ -64,6 +64,8 @@ async function run() {
       }
     });
 
+    console.log(pull_request)
+
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
