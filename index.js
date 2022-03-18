@@ -79,7 +79,7 @@ async function run() {
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
-        "github-actions[bot]",
+        "github-actions",
         pull_request.number,
         github.context.payload.repository.name
       );
