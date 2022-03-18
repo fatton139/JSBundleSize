@@ -1302,6 +1302,8 @@ async function run() {
       }
     });
 
+    console.log("test", github.context.repository);
+
     if (pull_request) {
       const existingComment = await findComment(
         octokit,
@@ -1311,7 +1313,7 @@ async function run() {
       );
 
       console.log("--", existingComment);
-      console.log("test", github.context);
+
 
       // If the comment exists and starts with our defined header above then it must be our previous comment.
       // Then update instead of creating a new one.
