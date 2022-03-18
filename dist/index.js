@@ -1251,8 +1251,10 @@ const findComment = async (octokit, owner, issue_number) => {
       }
     }
   } catch (e) {
-    console.log("find comment", e);
-    return undefined;
+    if (e.data.message === "Not Found") {
+      return undefined
+    }    
+    throw e;
   }
 };
 
