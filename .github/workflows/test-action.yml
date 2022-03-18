@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - uses: "fatton139/JSBundleSize@${{ github.sha }}"
+      - uses: fatton139/JSBundleSize
         with:
           dist_path: "./dist/"
           token: ${{ secrets.GITHUB_TOKEN }}
