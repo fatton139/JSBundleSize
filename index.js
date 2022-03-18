@@ -3,6 +3,8 @@ const exec = require("@actions/exec");
 const github = require("@actions/github");
 
 const findComment = async (octokit, owner, issue_number, repo) => {
+
+  console.log("finding", owner, issue_number, repo)
   try {
     for await (const { data: comments } of octokit.paginate.iterator(
       octokit.rest.issues.listComments,
