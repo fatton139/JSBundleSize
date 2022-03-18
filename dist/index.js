@@ -1240,6 +1240,7 @@ const findComment = async (octokit, owner, issue_number) => {
       }
     )) {
       // Search each page for the comment
+      console.log(comments)
       const comment = comments.find(
         (comment) =>
           comment.user.login === owner &&
