@@ -15,7 +15,7 @@ steps:
         npm install
         npm build
         # ... other build steps
-      - uses: fatton139/JSBundleSize@master
+      - uses: fatton139/pr-comment-file-size@master
         with:
           dist_path: "./path-to-output-dir-or-file"
           update_comment: false

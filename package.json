@@ -1,7 +1,7 @@
 {
-  "name": "js-bundle-size",
+  "name": "pr-comment-file-size",
   "version": "1.0.0",
-  "description": "JSBundleSize",
+  "description": "Comments file sizes on a given PR",
   "main": "index.js",
   "scripts": {
     "lint": "eslint index.js",
