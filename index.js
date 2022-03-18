@@ -83,7 +83,7 @@ async function run() {
         octokit,
         owner,
         pull_request.number,
-        repoName
+        repo
       );
 
       console.log("found", existingComment);
