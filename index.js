@@ -51,13 +51,14 @@ async function getSizeOutput(path) {
       sizeCalOutput += data.toString();
     },
   };
-  await exec.exec(`du ${path} --max-depth=1`, null, outputOptions);
+  await exec.exec(`du ${path} --max-depth=0`, null, outputOptions);
   core.setOutput("size", sizeCalOutput);
 
   const arrayOutput = sizeCalOutput.split("\n");
 
   return arrayOutput.map((item) => {
     const [byteSize, , fileName] = item.split(/(\s+)/);
+    console.log("--", fileName, fileName)
     return [fileName, byteSize];
   });
 }
