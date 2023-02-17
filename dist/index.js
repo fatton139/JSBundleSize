@@ -1314,12 +1314,12 @@ async function run() {
 
     const markdownTableStr = markdownTable(table);
     const markdown = `
-    <details> \n\n
-    <summary>Bundled size for the files is listed below:</summary> \n\n
-    <br> \n\n
-    ${markdownTableStr} \n\n
-    </details> \n
-    `;
+<details> \n
+<summary>Bundled size for the files is listed below:</summary> \n
+<br> \n
+${markdownTableStr} \n
+</details>
+`;
 
     if (pullRequest) {
       const existingComment = await findComment(octokit, {
