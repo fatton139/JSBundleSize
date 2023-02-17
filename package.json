@@ -1,6 +1,6 @@
 {
   "name": "pr-comment-file-size",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Comments file sizes on a given PR",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,8 @@
     "@actions/core": "^1.1.1",
     "@actions/exec": "^1.0.3",
     "@actions/github": "^5.0.0",
-    "acorn": "^7.1.1"
+    "acorn": "^7.1.1",
+    "markdown-table": "^3.0.3"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.20.5",

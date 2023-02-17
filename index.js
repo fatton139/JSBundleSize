@@ -1,6 +1,7 @@
 const core = require("@actions/core");
 const exec = require("@actions/exec");
 const github = require("@actions/github");
+const { markdownTable } = require("markdown-table");
 
 const GITHUB_ACTIONS_USER_NAME = "github-actions[bot]";
 const GITHUB_ACTIONS_USER_TYPE = "Bot";
@@ -66,14 +67,29 @@ async function run() {
     const repo = context.payload.repository.name;
 
     const arrayOutput = sizeCalOutput.split("\n");
-    const header = "Bundled size for the files is listed below:";
-    let result = `${header} \n \n`;
+
+    const tableHeader = ["File", "Size"];
+    const table = [tableHeader];
+    let totalSize = 0;
     arrayOutput.forEach((item) => {
       const i = item.split(/(\s+)/);
       if (item) {
-        result += `**${i[2]}**: ${bytesToSize(parseInt(i[0]) * 1000)} \n`;
+        const byteSize = Number(i[0]) * 1000;
+        totalSize += byteSize;
+        table.push([`**${i[2]}**`, String(bytesToSize(byteSize))]);
       }
     });
+
+    table.push(["Total", String(bytesToSize(totalSize))]);
+
+    const markdownTableStr = markdownTable(table);
+    const markdown = `
+<details> \n
+<summary>Bundled size for the files is listed below:</summary> \n
+<br> \n
+${markdownTableStr} \n
+</details>
+`;
 
     if (pullRequest) {
       const existingComment = await findComment(octokit, {
@@ -87,7 +103,7 @@ async function run() {
           owner,
           repo,
           comment_id: existingComment.id,
-          body: result,
+          body: markdown,
         });
       } else {
         // on pull request commit push add comment to pull request
@@ -95,7 +111,7 @@ async function run() {
           owner,
           repo,
           issue_number: pullRequest.number,
-          body: result,
+          body: markdown,
         });
       }
     } else {
