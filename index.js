@@ -56,8 +56,6 @@ async function getSizeOutput(path) {
 
   const arrayOutput = sizeCalOutput.split("\n");
 
-  console.log(arrayOutput)
-
   return arrayOutput.forEach((item) => {
     const [byteSize, , fileName] = item.split(/(\s+)/);
     return [fileName, byteSize];
@@ -65,6 +63,9 @@ async function getSizeOutput(path) {
 }
 
 function makeNoDiffTable(sizes) {
+
+  console.log("---", sizes)
+
   const tableHeader = ["File", "File Size"];
   const table = [tableHeader];
   let totalSize = 0;

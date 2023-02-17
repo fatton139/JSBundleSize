@@ -1293,6 +1293,9 @@ async function getSizeOutput(path) {
 }
 
 function makeNoDiffTable(sizes) {
+
+  console.log("---", sizes)
+
   const tableHeader = ["File", "File Size"];
   const table = [tableHeader];
   let totalSize = 0;
