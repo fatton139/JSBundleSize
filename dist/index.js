@@ -1269,6 +1269,89 @@ function bytesToSize(bytes) {
   return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
 }
 
+async function getSizeOutput(path) {
+  const outputOptions = {};
+  let sizeCalOutput = "";
+
+  outputOptions.listeners = {
+    stdout: (data) => {
+      sizeCalOutput += data.toString();
+    },
+    stderr: (data) => {
+      sizeCalOutput += data.toString();
+    },
+  };
+  await exec.exec(`du ${path} --max-depth=1`, null, outputOptions);
+  core.setOutput("size", sizeCalOutput);
+
+  const arrayOutput = sizeCalOutput.split("\n");
+
+  return arrayOutput.forEach((item) => {
+    const [byteSize, , fileName] = item.split(/(\s+)/);
+    return [fileName, byteSize];
+  });
+}
+
+function makeNoDiffTable(sizes) {
+  const tableHeader = ["File", "File Size"];
+  const table = [tableHeader];
+  let totalSize = 0;
+  sizes.forEach(([file, size]) => {
+    const byteSize = Number(size) * 1000;
+    totalSize += size;
+    table.push([`**${file}**`, String(bytesToSize(byteSize))]);
+  });
+
+  table.push(["Total", String(bytesToSize(totalSize))]);
+  return table;
+}
+
+function getDeltaString(delta) {
+  return delta === 0
+    ? `No change`
+    : `${delta > 0 ? "+" : "-"}${bytesToSize(Math.abs(delta))} ${
+        delta > 0 ? "🔼" : "🔽"
+      }`;
+}
+
+function makeDiffTable(sizes, diffSizes) {
+  const diffMap = new Map();
+  diffSizes.forEach(([file, size]) => {
+    diffMap.set(file, size);
+  });
+
+  const tableHeader = ["File", "File Size", "Diff File Size", "Delta"];
+  const table = [tableHeader];
+  let totalSize = 0;
+  let totalDiffSize = 0;
+  sizes.forEach(([file, size]) => {
+    const diffSize = diffMap.get(file);
+    const byteSize = Number(size) * 1000;
+    if (diffSize !== undefined) {
+      const diffByteSize = Number(diffSize) * 1000;
+      const delta = byteSize - diffByteSize;
+      totalSize += size;
+      totalDiffSize += diffByteSize;
+      table.push([
+        `**${file}**`,
+        bytesToSize(byteSize),
+        bytesToSize(diffByteSize),
+        getDeltaString(delta),
+      ]);
+    } else {
+      table.push([
+        `**${file}**`,
+        bytesToSize(byteSize),
+        "-",
+        getDeltaString(totalSize - totalDiffSize),
+      ]);
+    }
+  });
+
+  table.push(["Total", String(bytesToSize(totalSize))]);
+  return table;
+}
+
 async function run() {
   try {
     // --------------- octokit initialization  ---------------
@@ -1276,41 +1359,19 @@ async function run() {
     const updateComment = core.getBooleanInput("update_comment");
     const octokit = new github.getOctokit(token);
 
-    const dist_path = core.getInput("dist_path");
+    const path = core.getInput("path");
+    const diffPath = core.getInput("diff_path");
 
-    const outputOptions = {};
-    let sizeCalOutput = "";
-
-    outputOptions.listeners = {
-      stdout: (data) => {
-        sizeCalOutput += data.toString();
-      },
-      stderr: (data) => {
-        sizeCalOutput += data.toString();
-      },
-    };
-    await exec.exec(`du ${dist_path}`, null, outputOptions);
-    core.setOutput("size", sizeCalOutput);
     const context = github.context;
     const pullRequest = context.payload.pull_request;
     const owner = context.payload.repository.owner.login;
     const repo = context.payload.repository.name;
 
-    const arrayOutput = sizeCalOutput.split("\n");
+    const arrayOutput = await getSizeOutput(path);
 
-    const tableHeader = ["File", "Size"];
-    const table = [tableHeader];
-    let totalSize = 0;
-    arrayOutput.forEach((item) => {
-      const i = item.split(/(\s+)/);
-      if (item) {
-        const byteSize = Number(i[0]) * 1000;
-        totalSize += byteSize;
-        table.push([`**${i[2]}**`, String(bytesToSize(byteSize))]);
-      }
-    });
-
-    table.push(["Total", String(bytesToSize(totalSize))]);
+    const table = diffPath
+      ? makeDiffTable(arrayOutput, await getSizeOutput(diffPath))
+      : makeNoDiffTable(arrayOutput);
 
     const markdownTableStr = markdownTable(table);
     const markdown = `
