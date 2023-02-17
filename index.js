@@ -1,11 +1,15 @@
+const fs = require("fs");
+const path = require("path");
 const core = require("@actions/core");
-const exec = require("@actions/exec");
 const github = require("@actions/github");
+const { markdownTable } = require("markdown-table");
 
 const GITHUB_ACTIONS_USER_NAME = "github-actions[bot]";
 const GITHUB_ACTIONS_USER_TYPE = "Bot";
-const GITHUB_ACTIONS_COMMENT_START_TEXT =
-  "Bundled size for the files is listed below:";
+const GITHUB_ACTIONS_COMMENT_START_TEXT = `
+<details> \n
+<summary>Bundled size for the files is listed below:</summary> \n
+`;
 
 async function findComment(octokit, { owner, issue_number, repo }) {
   for await (const { data: comments } of octokit.paginate.iterator(
@@ -38,6 +42,86 @@ function bytesToSize(bytes) {
   return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
 }
 
+async function getSizeOutputForDir(dirOrFile) {
+  const isDir = (await fs.promises.stat(dirOrFile)).isDirectory();
+
+  if (isDir) {
+    const dir = dirOrFile;
+    core.debug(`Mapping file sizes for ${dir} ...`);
+    const files = await fs.promises.readdir(dir);
+    return (
+      await Promise.all(
+        files.map((file) =>
+          Promise.all([file, fs.promises.stat(path.join(dir, file))])
+        )
+      )
+    )
+      .filter(([, stats]) => !stats.isDirectory())
+      .map(([file, stats]) => [file, stats.size]);
+  }
+
+  const file = dirOrFile;
+
+  return [[file, (await fs.promises.stat(file)).size]];
+}
+
+function makeNoDiffTable(sizes) {
+  const tableHeader = ["File", "File Size"];
+  const table = [tableHeader];
+  let totalSize = 0;
+  sizes.forEach(([file, byteSize]) => {
+    totalSize += byteSize;
+    table.push([`**${file}**`, bytesToSize(byteSize)]);
+  });
+
+  table.push(["Total", bytesToSize(totalSize)]);
+  return table;
+}
+
+function getDeltaString(delta) {
+  return delta === 0
+    ? `No change`
+    : `${delta > 0 ? "+" : "-"}${bytesToSize(Math.abs(delta))} ${
+        delta > 0 ? "🔼" : "🔽"
+      }`;
+}
+
+function makeDiffTable(sizes, diffSizes) {
+  const diffMap = new Map();
+  diffSizes.forEach(([file, size]) => {
+    diffMap.set(file, size);
+  });
+
+  const tableHeader = ["File", "File Size", "Diff File Size", "Delta"];
+  const table = [tableHeader];
+  let totalSize = 0;
+  let totalDiffSize = 0;
+  sizes.forEach(([file, byteSize]) => {
+    const diffByteSize = diffMap.get(file);
+    if (diffByteSize !== undefined) {
+      const delta = byteSize - diffByteSize;
+      totalSize += byteSize;
+      totalDiffSize += diffByteSize;
+      table.push([
+        `**${file}**`,
+        bytesToSize(byteSize),
+        bytesToSize(diffByteSize),
+        getDeltaString(delta),
+      ]);
+    } else {
+      table.push([`**${file}**`, bytesToSize(byteSize), "-", "-"]);
+    }
+  });
+
+  table.push([
+    "Total",
+    bytesToSize(totalSize),
+    bytesToSize(totalDiffSize),
+    getDeltaString(totalSize - totalDiffSize),
+  ]);
+  return table;
+}
+
 async function run() {
   try {
     // --------------- octokit initialization  ---------------
@@ -45,35 +129,32 @@ async function run() {
     const updateComment = core.getBooleanInput("update_comment");
     const octokit = new github.getOctokit(token);
 
-    const dist_path = core.getInput("dist_path");
+    const path = core.getInput("path");
+    const diffPath = core.getInput("diff_path");
 
-    const outputOptions = {};
-    let sizeCalOutput = "";
-
-    outputOptions.listeners = {
-      stdout: (data) => {
-        sizeCalOutput += data.toString();
-      },
-      stderr: (data) => {
-        sizeCalOutput += data.toString();
-      },
-    };
-    await exec.exec(`du ${dist_path}`, null, outputOptions);
-    core.setOutput("size", sizeCalOutput);
     const context = github.context;
     const pullRequest = context.payload.pull_request;
     const owner = context.payload.repository.owner.login;
     const repo = context.payload.repository.name;
 
-    const arrayOutput = sizeCalOutput.split("\n");
-    const header = "Bundled size for the files is listed below:";
-    let result = `${header} \n \n`;
-    arrayOutput.forEach((item) => {
-      const i = item.split(/(\s+)/);
-      if (item) {
-        result += `**${i[2]}**: ${bytesToSize(parseInt(i[0]) * 1000)} \n`;
-      }
-    });
+    const arrayOutput = await getSizeOutputForDir(path);
+
+    const table = diffPath
+      ? makeDiffTable(arrayOutput, await getSizeOutputForDir(diffPath))
+      : makeNoDiffTable(arrayOutput);
+
+    const markdownTableStr = markdownTable(table);
+
+    core.debug("Outputting table:");
+    core.debug(markdownTableStr);
+
+    const markdown = `
+<details> \n
+<summary>Bundled size for the files is listed below:</summary> \n
+<br> \n
+${markdownTableStr} \n
+</details>
+`;
 
     if (pullRequest) {
       const existingComment = await findComment(octokit, {
@@ -87,7 +168,7 @@ async function run() {
           owner,
           repo,
           comment_id: existingComment.id,
-          body: result,
+          body: markdown,
         });
       } else {
         // on pull request commit push add comment to pull request
@@ -95,7 +176,7 @@ async function run() {
           owner,
           repo,
           issue_number: pullRequest.number,
-          body: result,
+          body: markdown,
         });
       }
     } else {
@@ -104,6 +185,7 @@ async function run() {
 
     // --------------- End Comment repo size  ---------------
   } catch (error) {
+    core.error(error.stack);
     core.setFailed(error.message);
   }
 }

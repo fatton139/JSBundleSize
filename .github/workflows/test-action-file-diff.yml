@@ -1,0 +1,29 @@
+name: Test action - file with diff
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: head
+
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+
+      - uses: ./head
+        with:
+          path: ${{ github.workspace }}/head/dist/index.js
+          diff_path: ${{ github.workspace }}/base/dist/index.js
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,16 +1,18 @@
 name: "pr-comment-file-size"
-description: "Comments file sizes on a given PR"
-author: "sarthak-saxena & fatton139"
+description: "Analyses and compares file sizes then comments them onto the current PR."
+author: "fatton139"
 inputs:
-  dist_path:
-    description: "output path for the build package"
+  path:
+    description: "Path to file or directory for file sizes analysis."
     required: true
-    default: "dist"
+  diff_path:
+    description: "Optional path to another directory to perform file size diff against the provided path."
+    required: false
   token:
-    description: "your GITHUB_TOKEN"
+    description: "your GITHUB_TOKEN env var."
     required: true
   update_comment:
-    description: "whether to update the existing comment or create new ones"
+    description: "whether to update the existing comment or create new ones on each run."
     required: false
     default: true
 runs:

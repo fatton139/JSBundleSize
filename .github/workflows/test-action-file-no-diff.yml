@@ -1,4 +1,4 @@
-name: Test action
+name: Test action - file with no diff
 
 on:
   push:
@@ -16,5 +16,5 @@ jobs:
 
       - uses: ./
         with:
-          dist_path: "./dist/"
+          path: ${{ github.workspace }}/dist/index.js
           token: ${{ secrets.GITHUB_TOKEN }}
