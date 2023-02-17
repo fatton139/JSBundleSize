@@ -1286,16 +1286,13 @@ async function getSizeOutput(path) {
 
   const arrayOutput = sizeCalOutput.split("\n");
 
-  return arrayOutput.forEach((item) => {
+  return arrayOutput.map((item) => {
     const [byteSize, , fileName] = item.split(/(\s+)/);
     return [fileName, byteSize];
   });
 }
 
 function makeNoDiffTable(sizes) {
-
-  console.log("---", sizes)
-
   const tableHeader = ["File", "File Size"];
   const table = [tableHeader];
   let totalSize = 0;
