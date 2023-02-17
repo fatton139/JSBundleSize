@@ -58,9 +58,8 @@ async function getSizeOutput(path) {
 
   return arrayOutput.map((item) => {
     const [byteSize, , fileName] = item.split(/(\s+)/);
-    console.log("--", fileName, fileName)
     return [fileName, byteSize];
-  });
+  }).filter(([file]) => file !== undefined);
 }
 
 function makeNoDiffTable(sizes) {

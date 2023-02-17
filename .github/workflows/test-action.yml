@@ -16,5 +16,5 @@ jobs:
 
       - uses: ./
         with:
-          path: "./"
+          path: "./dist/*"
           token: ${{ secrets.GITHUB_TOKEN }}
