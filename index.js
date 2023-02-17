@@ -12,6 +12,7 @@ const GITHUB_ACTIONS_COMMENT_START_TEXT = `
 `;
 
 async function findComment(octokit, { owner, issue_number, repo }) {
+  console.log("test);
   for await (const { data: comments } of octokit.paginate.iterator(
     octokit.rest.issues.listComments,
     {
