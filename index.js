@@ -56,6 +56,8 @@ async function getSizeOutput(path) {
 
   const arrayOutput = sizeCalOutput.split("\n");
 
+  console.log(arrayOutput)
+
   return arrayOutput.forEach((item) => {
     const [byteSize, , fileName] = item.split(/(\s+)/);
     return [fileName, byteSize];
