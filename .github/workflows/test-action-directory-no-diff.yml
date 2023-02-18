@@ -17,4 +17,5 @@ jobs:
       - uses: ./
         with:
           path: ${{ github.workspace }}
+          update_comment: false
           token: ${{ secrets.GITHUB_TOKEN }}

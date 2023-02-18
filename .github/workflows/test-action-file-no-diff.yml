@@ -17,4 +17,5 @@ jobs:
       - uses: ./
         with:
           path: ${{ github.workspace }}/dist/index.js
+          update_comment: false
           token: ${{ secrets.GITHUB_TOKEN }}

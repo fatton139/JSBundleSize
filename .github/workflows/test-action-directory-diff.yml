@@ -26,4 +26,5 @@ jobs:
         with:
           path: ${{ github.workspace }}/head
           diff_path: ${{ github.workspace }}/base
+          update_comment: false
           token: ${{ secrets.GITHUB_TOKEN }}
