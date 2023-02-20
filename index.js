@@ -141,9 +141,9 @@ async function run() {
 
     const arrayOutput = await getSizeOutputForDir(path);
 
-    const filteredOutput = arrayOutput.filter(([file]) =>
-      micromatch.isMatch(file, fileGlobPattern)
-    );
+    const filteredOutput = arrayOutput
+      .filter(([file]) => micromatch.isMatch(file, fileGlobPattern))
+      .sort(([, a], [, b]) => a - b);
 
     const table = diffPath
       ? makeDiffTable(filteredOutput, await getSizeOutputForDir(diffPath))
