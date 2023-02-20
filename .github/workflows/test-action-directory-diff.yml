@@ -3,6 +3,7 @@ name: Test action - directory with diff
 on:
   push:
   pull_request:
+    types: [opened]
 
 permissions:
   contents: read
@@ -27,3 +28,4 @@ jobs:
           path: ${{ github.workspace }}/head
           diff_path: ${{ github.workspace }}/base
           token: ${{ secrets.GITHUB_TOKEN }}
+          update_comment: false

@@ -8,6 +8,8 @@ To diff against another directory or file set `diff_path`.
 
 You can choose to upsert the existing bot comment or create new ones after every change by configuring the `update_comment` flag.
 
+For further filtering of files specify a glob pattern in `file_glob_pattern`.
+
 ## Usage:
 
 Please check the below code for detailed usage:
@@ -72,4 +74,3 @@ jobs:
 ## License
 
 The scripts and documentation in this project are released under the [MIT License](./LICENSE)
-test

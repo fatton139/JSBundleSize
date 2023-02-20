@@ -3,6 +3,7 @@ const path = require("path");
 const core = require("@actions/core");
 const github = require("@actions/github");
 const { markdownTable } = require("markdown-table");
+const micromatch = require("micromatch");
 
 const GITHUB_ACTIONS_USER_NAME = "github-actions[bot]";
 const GITHUB_ACTIONS_USER_TYPE = "Bot";
@@ -127,10 +128,11 @@ async function run() {
     // --------------- octokit initialization  ---------------
     const token = core.getInput("token");
     const updateComment = core.getBooleanInput("update_comment");
-    const octokit = new github.getOctokit(token);
-
     const path = core.getInput("path");
     const diffPath = core.getInput("diff_path");
+    const fileGlobPattern = core.getMultilineInput("file_glob_pattern");
+
+    const octokit = new github.getOctokit(token);
 
     const context = github.context;
     const pullRequest = context.payload.pull_request;
@@ -139,9 +141,13 @@ async function run() {
 
     const arrayOutput = await getSizeOutputForDir(path);
 
+    const filteredOutput = arrayOutput.filter(([file]) =>
+      micromatch.isMatch(file, fileGlobPattern)
+    );
+
     const table = diffPath
-      ? makeDiffTable(arrayOutput, await getSizeOutputForDir(diffPath))
-      : makeNoDiffTable(arrayOutput);
+      ? makeDiffTable(filteredOutput, await getSizeOutputForDir(diffPath))
+      : makeNoDiffTable(filteredOutput);
 
     const markdownTableStr = markdownTable(table);
 

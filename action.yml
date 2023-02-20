@@ -15,6 +15,9 @@ inputs:
     description: "whether to update the existing comment or create new ones on each run."
     required: false
     default: true
+  file_glob_pattern:
+    description: "Glob pattern for filtering of the files."
+    required: false
 runs:
   using: "node12"
   main: "dist/index.js"

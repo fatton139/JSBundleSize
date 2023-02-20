@@ -1,4 +1,4 @@
-name: Test action - directory with no diff
+name: Test action - File glob pattern
 
 on:
   push:
@@ -20,3 +20,4 @@ jobs:
           path: ${{ github.workspace }}
           update_comment: false
           token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob_pattern: "*.json"
